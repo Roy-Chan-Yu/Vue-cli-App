@@ -40,7 +40,10 @@
               >
                 編輯
               </button>
-              <button class="btn btn-outline-danger btn-sm" @click="openDelProductModal(item)">
+              <button
+                class="btn btn-outline-danger btn-sm"
+                @click="openDelProductModal(item)"
+              >
                 刪除
               </button>
             </div>
@@ -48,6 +51,28 @@
         </tr>
       </tbody>
     </table>
+
+    <nav aria-label="Page navigation example">
+      <ul class="pagination">
+        <li class="page-item">
+          <a class="page-link" href="#" aria-label="Previous" 
+              :class=" {'disabled': !pagination.has_pre}" 
+              @click.prevent="getProducts(pagination.current_page -1)">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+        <li class="page-item" v-for="page in pagination.total_pages"
+           :key="page" :class=" { 'active': pagination.current_page === page }">
+          <a class="page-link" href="#" @click.prevent="getProducts(page)" >{{page}}</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="#" aria-label="Next" :class=" {'disabled': !pagination.has_next }"
+            @click.prevent="getProducts(pagination.current_page +1)" >
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
 
     <!-- Modal -->
     <div
@@ -89,7 +114,10 @@
                 <div class="form-group">
                   <label for="customFile"
                     >或 上傳圖片
-                    <i class="fas fa-spinner fa-spin" v-if="status.fileUploading"></i>
+                    <i
+                      class="fas fa-spinner fa-spin"
+                      v-if="status.fileUploading"
+                    ></i>
                   </label>
                   <input
                     type="file"
@@ -217,7 +245,14 @@
         </div>
       </div>
     </div>
-    <div class="modal fade" id="delProductModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div
+      class="modal fade"
+      id="delProductModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
       <div class="modal-dialog" role="document">
         <div class="modal-content border-0">
           <div class="modal-header bg-danger text-white">
@@ -268,18 +303,20 @@ export default {
       status: {
         fileUploading: false,
       },
+      pagination: {},
     };
   },
   methods: {
-    getProducts() {
-      const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/products`;
+    getProducts(page = 1) {
+      const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/products?page=${page}`;
       const vm = this;
       console.log(process.env.APIPATH, process.env.CUSTOMPATH);
-      vm.isLoading =true;
+      vm.isLoading = true;
       this.$http.get(api).then((response) => {
         console.log(response.data);
         vm.products = response.data.products;
         vm.isLoading = false;
+        vm.pagination = response.data.pagination;
       });
     },
     openModal(isNew, item) {
@@ -336,7 +373,8 @@ export default {
       formData.append("file-to-upload", uploadedFile);
       const url = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/admin/upload`;
       vm.status.fileUploading = true;
-      this.$http.post(url, formData, {
+      this.$http
+        .post(url, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -347,10 +385,10 @@ export default {
           if (response.data.success) {
             vm.tempProduct.imgUrl = response.data.imgUrl;
             console.log(vm.tempProduct); // 未包含get;set; => not use Two-way bindings
-            
+
             vm.$set(vm.tempProduct, "imageUrl", response.data.imgUrl);
           } else {
-            this.$bus.$emit('message:push', response.data.message, 'danger');
+            this.$bus.$emit("message:push", response.data.message, "danger");
           }
         });
     },
