@@ -1,5 +1,7 @@
 <template>
   <div>
+    <loading :active.sync="isLoading"></loading>
+
     <div class="text-right mt-4">
       <button class="btn btn-primary" @click="openModal(true)">
         建立新的產品
@@ -38,7 +40,12 @@
               >
                 編輯
               </button>
-              <button class="btn btn-outline-danger btn-sm" @click="openDelProductModal(item)">刪除</button>
+              <button
+                class="btn btn-outline-danger btn-sm"
+                @click="openDelProductModal(item)"
+              >
+                刪除
+              </button>
             </div>
           </td>
         </tr>
@@ -85,16 +92,14 @@
                 <div class="form-group">
                   <label for="customFile"
                     >或 上傳圖片
-                    <i
-                      class="fas fa-spinner fa-spin"
-                      v-if="status.fileUploading"
-                    ></i>
+                    <i class="fas fa-spinner fa-spin" v-if="status.fileUploading"></i>
                   </label>
                   <input
                     type="file"
                     id="customFile"
                     class="form-control"
                     ref="files"
+                    @change="uploadFile"
                   />
                 </div>
                 <img class="img-fluid" :src="tempProduct.imageUrl" alt="" />
@@ -251,7 +256,9 @@
             >
               取消
             </button>
-            <button type="button" class="btn btn-danger" @click="delProduct">確認刪除</button>
+            <button type="button" class="btn btn-danger" @click="delProduct">
+              確認刪除
+            </button>
           </div>
         </div>
       </div>
@@ -267,7 +274,7 @@ export default {
       products: [],
       tempProduct: {},
       isNew: false,
-      isLoading: false,
+      isLoading: true,
       status: {
         fileUploading: false,
       },
@@ -278,10 +285,11 @@ export default {
       const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/products`;
       const vm = this;
       console.log(process.env.APIPATH, process.env.CUSTOMPATH);
-
+      vm.isLoading =true;
       this.$http.get(api).then((response) => {
         console.log(response.data);
         vm.products = response.data.products;
+        vm.isLoading = false;
       });
     },
     openModal(isNew, item) {
@@ -295,21 +303,25 @@ export default {
       $("#productModal").modal("show");
     },
     openDelProductModal(item) {
-        const vm = this;
-        $('#delProductModal').modal('show');
-        vm.tempProduct = Object.assign({}, item);
-
+      const vm = this;
+      $("#delProductModal").modal("show");
+      vm.tempProduct = Object.assign({}, item);
     },
     updateProduct() {
       //   let api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/admin/product`;
       let api = "https://vue-course-api.hexschool.io/api/royu/admin/product";
-      let httpMethod = 'post';
+      let httpMethod = "post";
       const vm = this;
-      console.log(process.env.APIPATH, process.env.CUSTOMPATH, ' ',vm.tempProduct);
-      
+      console.log(
+        process.env.APIPATH,
+        process.env.CUSTOMPATH,
+        " ",
+        vm.tempProduct
+      );
+
       if (!vm.isNew) {
         let api = `https://vue-course-api.hexschool.io/api/royu/admin/product/${vm.tempProduct.id}`;
-        httpMethod = 'put';
+        httpMethod = "put";
       }
       this.$http[httpMethod](api, vm.tempProduct).then((response) => {
         console.log(response.data);
@@ -326,17 +338,39 @@ export default {
 
       // vm.products = response.data.products;
     },
-    delProduct() {
-        const vm = this;
-        const url = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/admin/product/${vm.tempProduct.id}`;
-        this.$http.delete(url).then((response) => {
-            console.log(response, vm.tempProduct);
-            $('#delProductModal').modal('hide');
-            vm.isLoading = false;
-            this.getProducts();
+    uploadFile() {
+      console.log(this);
+      const uploadedFile = this.$refs.files.files;
+      const vm = this;
+      const formData = new FormData();
+      formData.append("file-to-upload", uploadedFile);
+      const url = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/admin/upload`;
+      vm.status.fileUploading = true;
+      this.$http.post(url, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         })
-
-    }
+        .then((response) => {
+          console.log(response);
+          vm.status.fileUploading = false;
+          if (response.data.success) {
+            vm.tempProduct.imgUrl = response.data.imgUrl;
+            console.log(vm.tempProduct); // 未包含get;set; => not use Two-way bindings
+            vm.$set(vm.tempProduct, "imageUrl", response.data.imgUrl);
+          }
+        });
+    },
+    delProduct() {
+      const vm = this;
+      const url = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/admin/product/${vm.tempProduct.id}`;
+      this.$http.delete(url).then((response) => {
+        console.log(response, vm.tempProduct);
+        $("#delProductModal").modal("hide");
+        vm.isLoading = false;
+        this.getProducts();
+      });
+    },
   },
   created() {
     this.getProducts();
