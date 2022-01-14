@@ -3,7 +3,7 @@ import Router from 'vue-router'
 import DashBoard from '@/components/DashBoard'
 import Login from '@/components/pages/Login'
 import Products from '@/components/Products'
-
+import CustomerOrder from '@/components/pages/CustomerOrders';
 Vue.use(Router)
 
 export default new Router({
@@ -27,6 +27,18 @@ export default new Router({
           name: 'Products',
           component: Products,
           meta: { requiresAuth: true }
+        }
+      ]
+    },
+    {
+      path: '/',
+      name: 'DashBoard',
+      component: DashBoard,
+      children: [
+        {
+          path: 'customer_order',
+          name: 'CustomerOrder',
+          component: CustomerOrder,
         }
       ]
     }
