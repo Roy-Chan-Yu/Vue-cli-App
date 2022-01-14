@@ -8,13 +8,18 @@ import VueAxios from 'vue-axios'
 import 'bootstrap';
 import Loading from 'vue-loading-overlay';
 import 'vue-loading-overlay/dist/vue-loading.css';
+import VeeValidate from 'vee-validate';
 import './bus'
 import currencyFilter from './filters/currency';
+import zhTWValidate from 'vee-validate/dist/locale/zh_TW';
 
 Vue.config.productionTip = false
 Vue.use(VueAxios, axios);
 Vue.component('Loading',Loading);
 Vue.filter('currency',currencyFilter);
+
+Vue.use(VeeValidate);
+VeeValidate.Validator.localize('zh_TW',zhTWValidate);
 
 axios.defaults.withCredentials = true;
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
