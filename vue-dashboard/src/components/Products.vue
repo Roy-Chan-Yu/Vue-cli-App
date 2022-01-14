@@ -40,10 +40,7 @@
               >
                 編輯
               </button>
-              <button
-                class="btn btn-outline-danger btn-sm"
-                @click="openDelProductModal(item)"
-              >
+              <button class="btn btn-outline-danger btn-sm" @click="openDelProductModal(item)">
                 刪除
               </button>
             </div>
@@ -220,14 +217,7 @@
         </div>
       </div>
     </div>
-    <div
-      class="modal fade"
-      id="delProductModal"
-      tabindex="-1"
-      role="dialog"
-      aria-labelledby="exampleModalLabel"
-      aria-hidden="true"
-    >
+    <div class="modal fade" id="delProductModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content border-0">
           <div class="modal-header bg-danger text-white">
@@ -357,7 +347,10 @@ export default {
           if (response.data.success) {
             vm.tempProduct.imgUrl = response.data.imgUrl;
             console.log(vm.tempProduct); // 未包含get;set; => not use Two-way bindings
+            
             vm.$set(vm.tempProduct, "imageUrl", response.data.imgUrl);
+          } else {
+            this.$bus.$emit('message:push', response.data.message, 'danger');
           }
         });
     },
@@ -374,6 +367,7 @@ export default {
   },
   created() {
     this.getProducts();
+    // this.$bus.$emit('message:push', '訊息提示', 'success');
   },
 };
 </script>
